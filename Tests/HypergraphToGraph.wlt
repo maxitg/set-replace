@@ -17,10 +17,14 @@
       testUnevaluated[
         HypergraphToGraph[],
 <<<<<<< HEAD
+<<<<<<< HEAD
         {HypergraphToGraph::argrx}
 =======
         {HypergraphToGraph::argx}
 >>>>>>> Adding tests for HypergraphToGraph function.
+=======
+        {HypergraphToGraph::argrx}
+>>>>>>> Fixing MessageNames in tests.
       ],
 
       testUnevaluated[
@@ -40,8 +44,12 @@
         {HypergraphToGraph::optx}
 =======
         HypergraphToGraph[{{1}}, "DistancePreserving", Automatic],
+<<<<<<< HEAD
         {HypergraphToGraph::argx}
 >>>>>>> Adding tests for HypergraphToGraph function.
+=======
+        {HypergraphToGraph::argrx}
+>>>>>>> Fixing MessageNames in tests.
       ],
 
       (** invalid hypergraph **)
@@ -124,10 +132,14 @@
 
       VerificationTest[
 <<<<<<< HEAD
+<<<<<<< HEAD
         HypergraphToGraph[{{1}}, "UndirectedDistancePreserving"],
 =======
         HypergraphToGraph[{{{1}}}, "DistancePreserving"],
 >>>>>>> Adding tests for HypergraphToGraph function.
+=======
+        HypergraphToGraph[{{1}}, "DistancePreserving"],
+>>>>>>> Fixing MessageNames in tests.
         Graph[{1}, {}]
       ],
 
