@@ -34,6 +34,7 @@
 
       testUnevaluated[
 <<<<<<< HEAD
+<<<<<<< HEAD
         HypergraphToGraph[{{1}}, "DirectedDistancePreserving", Automatic],
         {HypergraphToGraph::argrx}
       ],
@@ -48,17 +49,30 @@
         {HypergraphToGraph::argx}
 >>>>>>> Adding tests for HypergraphToGraph function.
 =======
+=======
+        HypergraphToGraph[{{1}}, "DirectedDistancePreserving", Automatic],
+>>>>>>> Updating unit tests.
         {HypergraphToGraph::argrx}
 >>>>>>> Fixing MessageNames in tests.
+      ],
+
+      (** invalid options **)
+      testUnevaluated[
+        HypergraphToGraph[{{1}}, "StructurePreserving", "invalid" -> "option"],
+        {HypergraphToGraph::optx}
       ],
 
       (** invalid hypergraph **)
       testUnevaluated[
 <<<<<<< HEAD
+<<<<<<< HEAD
         HypergraphToGraph[{1, {2}}, "DirectedDistancePreserving"],
 =======
         HypergraphToGraph[{1, {2}}, "DistancePreserving"],
 >>>>>>> Adding tests for HypergraphToGraph function.
+=======
+        HypergraphToGraph[{1, {2}}, "DirectedDistancePreserving"],
+>>>>>>> Updating unit tests.
         {HypergraphToGraph::invalidHypergraph}
       ],
 
@@ -68,6 +82,7 @@
         {HypergraphToGraph::invalidMethod}
       ],
 
+<<<<<<< HEAD
 <<<<<<< HEAD
       (* "DirectedDistancePreserving" *)
       VerificationTest[
@@ -118,19 +133,29 @@
       VerificationTest[
         HypergraphToGraph[{}, "DistancePreserving"],
 >>>>>>> Adding tests for HypergraphToGraph function.
+=======
+      (* "DirectedDistancePreserving" *)
+      VerificationTest[
+        HypergraphToGraph[{}, "DirectedDistancePreserving"],
+>>>>>>> Updating unit tests.
         Graph[{}, {}]
       ],
 
       VerificationTest[
 <<<<<<< HEAD
+<<<<<<< HEAD
         HypergraphToGraph[{{}}, "UndirectedDistancePreserving"],
 =======
         HypergraphToGraph[{{}}, "DistancePreserving"],
 >>>>>>> Adding tests for HypergraphToGraph function.
+=======
+        HypergraphToGraph[{{}}, "DirectedDistancePreserving"],
+>>>>>>> Updating unit tests.
         Graph[{}, {}]
       ],
 
       VerificationTest[
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         HypergraphToGraph[{{1}}, "UndirectedDistancePreserving"],
@@ -140,10 +165,14 @@
 =======
         HypergraphToGraph[{{1}}, "DistancePreserving"],
 >>>>>>> Fixing MessageNames in tests.
+=======
+        HypergraphToGraph[{{1}}, "DirectedDistancePreserving"],
+>>>>>>> Updating unit tests.
         Graph[{1}, {}]
       ],
 
       VerificationTest[
+<<<<<<< HEAD
 <<<<<<< HEAD
         HypergraphToGraph[{{1, 1}}, "UndirectedDistancePreserving"],
         Graph[{1}, {UndirectedEdge[1, 1]}]
@@ -178,10 +207,40 @@
       (* "StructurePreserving" *)
       VerificationTest[
         HypergraphToGraph[{}, "StructurePreserving"],
+=======
+        HypergraphToGraph[{{1, 1}}, "DirectedDistancePreserving"],
+        Graph[{1}, {DirectedEdge[1, 1]}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{1, 1, 1}}, "DirectedDistancePreserving"],
+        Graph[{1}, {DirectedEdge[1, 1], DirectedEdge[1, 1], DirectedEdge[1, 1]}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{1, 2, 1}}, "DirectedDistancePreserving"],
+        Graph[{1}, {DirectedEdge[1, 1], DirectedEdge[1, 2], DirectedEdge[2, 1]}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{Range[4]}, "DirectedDistancePreserving"],
+        Graph[{1, 2, 3, 4}, {{{1, 2}, {1, 3}, {1, 4}, {2, 3}, {2, 4}, {3, 4}}, Null}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{1, {3}, 2}, {2, 1, {3}}, {1, 1}, {2}}, "DirectedDistancePreserving"],
+        Graph[{1, 2, {3}}, {{{1, 1}, {1, 2}, {1, 3}, {1, 3}, {2, 1}, {2, 3}, {3, 2}}, Null}]
+      ],
+
+      (* "UndirectedDistancePreserving" *)
+      VerificationTest[
+        HypergraphToGraph[{}, "UndirectedDistancePreserving"],
+>>>>>>> Updating unit tests.
         Graph[{}, {}]
       ],
 
       VerificationTest[
+<<<<<<< HEAD
         getVertexEdgeList @ HypergraphToGraph[{{}}, "StructurePreserving"],
         getVertexEdgeList @ Graph[{{"Hyperedge", 1, 0}}, {}]
       ],
@@ -300,6 +359,30 @@
             DirectedEdge[1, {3}],
             DirectedEdge[1, 1]}]
 >>>>>>> Adding tests for HypergraphToGraph function.
+=======
+        HypergraphToGraph[{{}}, "UndirectedDistancePreserving"],
+        Graph[{}, {}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{1}}, "UndirectedDistancePreserving"],
+        Graph[{1}, {}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{1, 1}}, "UndirectedDistancePreserving"],
+        Graph[{1}, {UndirectedEdge[1, 1]}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{1, 1, 1}}, "UndirectedDistancePreserving"],
+        Graph[{1}, {UndirectedEdge[1, 1], UndirectedEdge[1, 1], UndirectedEdge[1, 1]}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{1, 2, 1}}, "UndirectedDistancePreserving"],
+        Graph[{1}, {UndirectedEdge[1, 1], UndirectedEdge[1, 2], UndirectedEdge[2, 1]}]
+>>>>>>> Updating unit tests.
       ]
     }
   |>
