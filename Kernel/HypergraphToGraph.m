@@ -54,6 +54,7 @@ graphJoin[{}, opts___] := Graph[{}, opts]
 graphJoin[graphs : {__Graph}, opts___] := With[{
     vertices = Sort @ Union @ Catenate[VertexList /@ graphs],
     edges = Sort @ Catenate[EdgeList /@ graphs]},
+<<<<<<< HEAD
   Graph[vertices, edges, opts]
 ]
 
@@ -155,22 +156,33 @@ graphJoin[{}, opts___] := Graph[{}, opts]
 graphJoin[graphs : {__Graph}, opts___] := With[{
     vertices = Sort @ Union @ Catenate[VertexList /@ graphs],
     edges = Sort@ Catenate[EdgeList /@ graphs]},
+=======
+>>>>>>> Implemented Max's suggestions and ordered code.
   Graph[vertices, edges, opts]
 ]
 
-(* Directed distance preserving *)
-hyperedgeToGraph$DirectedDistancePreserving[hyperedge_, opts___] :=
-  Graph[hyperedge, DirectedEdge @@@ Subsets[hyperedge, {2}], opts]
+(* Distance preserving *)
+toDistancePreserving[{directness_, hyperedge_}, opts___] :=
+  Graph[hyperedge, directness @@@ Subsets[hyperedge, {2}], opts]
 
 hypergraphToGraph[_, hgraph_ ? hypergraphQ, "DirectedDistancePreserving", opts : OptionsPattern[]] :=
-  With[{hyperedgeGraphs = hyperedgeToGraph$DirectedDistancePreserving[#, opts] & /@ hgraph},
+  With[{hyperedgeGraphs = toDistancePreserving[{DirectedEdge, #}, opts] & /@ hgraph},
+    graphJoin[hyperedgeGraphs, opts]
+  ]
+
+hypergraphToGraph[_, hgraph_ ? hypergraphQ, "UndirectedDistancePreserving", opts : OptionsPattern[]] :=
+  With[{hyperedgeGraphs = toDistancePreserving[{UndirectedEdge, #}, opts] & /@ hgraph},
     graphJoin[hyperedgeGraphs, opts]
   ]
 
 (* Structure preserving *)
-hyperedgeToGraph$StructurePreserving[hyperedge_, opts___] := With[{
-    edgeVertices = Table[Unique["v", {Temporary}], Length @ hyperedge]},
+toStructurePreserving[{hyperedgeIndex_, hyperedge_}, opts___] := ModuleScope[
+  hyperedgeVertices = Table[
+    "Hyperedge"[hyperedgeIndex, vertexPositionIndex],
+    {vertexPositionIndex, Length @ hyperedge}];
+  vertexVertices = "Vertex" /@ hyperedge;
   Graph[
+<<<<<<< HEAD
 <<<<<<< HEAD
     vertexList @ hgraph,
     Flatten[
@@ -186,35 +198,23 @@ hyperedgeToGraph$StructurePreserving[hyperedge_, opts___] := With[{
 >>>>>>> Adding HypergraphToGraph with Method -> "DistanceMatrix".
 =======
     Annotation[#, "AuxiliaryQ" -> True] & /@ edgeVertices,
+=======
+    hyperedgeVertices,
+>>>>>>> Implemented Max's suggestions and ordered code.
     Join[
-      DirectedEdge @@@ Partition[edgeVertices, 2, 1],
-      Thread[DirectedEdge[edgeVertices, hyperedge]]],
+      DirectedEdge @@@ Partition[hyperedgeVertices, 2, 1],
+      Thread[DirectedEdge[hyperedgeVertices, vertexVertices]]],
     opts]
 ]
 
 hypergraphToGraph[_, hgraph_ ? hypergraphQ, "StructurePreserving", opts : OptionsPattern[]] :=
-  ModuleScope[
-    hyperedgeGraphs = hyperedgeToGraph$StructurePreserving[#, opts] & /@ hgraph;
-    annotationRules = Replace[
-      DeleteCases[AnnotationValue[#, AnnotationRules] & /@ hyperedgeGraphs, $Failed],
-      {list : {__List} :> (AnnotationRules -> Catenate[list]), _ -> Sequence[]}];
-    hgraphVertexPatt = Alternatives @@ (vertexList @ hgraph);
+  With[{
+      hyperedgeGraphs = MapIndexed[toStructurePreserving[{#2[[1]], #1}, opts] &, hgraph]},
     graphJoin[
       hyperedgeGraphs,
-      annotationRules,
       opts,
-      VertexStyle -> {Except[hgraphVertexPatt] -> LightBlue},
-      EdgeStyle -> {DirectedEdge[Except[hgraphVertexPatt], Except[hgraphVertexPatt]] -> Dashed}]
-  ]
-
-(* Undirected distance preserving:
-   Each hyperedge is converted to a complete (undirected graph) *)
-hyperedgeToGraph$UndirectedDistancePreserving[hyperedge_, opts___] :=
-  Graph[hyperedge, UndirectedEdge @@@ Subsets[hyperedge, {2}], opts]
-
-hypergraphToGraph[_, hgraph_ ? hypergraphQ, "UndirectedDistancePreserving", opts : OptionsPattern[]] :=
-  With[{hyperedgeGraphs = hyperedgeToGraph$UndirectedDistancePreserving[#, opts] & /@ hgraph},
-    graphJoin[hyperedgeGraphs, opts]
+      VertexStyle -> {"Hyperedge"[__] -> LightBlue},
+      EdgeStyle -> {DirectedEdge["Hyperedge"[__], "Hyperedge"[__]] -> Dashed}]
   ]
 >>>>>>> Adding "UndirectedDistancePreserving"; Maxs suggestions.
 
