@@ -118,6 +118,7 @@
       VerificationTest[
         HypergraphToGraph[{Range[4]}, "DirectedDistancePreserving"],
         Graph[{1, 2, 3, 4}, {1 -> 2, 1 -> 3, 1 -> 4, 2 -> 3, 2 -> 4, 3 -> 4}]
+<<<<<<< HEAD
       ],
 
       VerificationTest[
@@ -225,11 +226,13 @@
       VerificationTest[
         HypergraphToGraph[{Range[4]}, "DirectedDistancePreserving"],
         Graph[{1, 2, 3, 4}, {{{1, 2}, {1, 3}, {1, 4}, {2, 3}, {2, 4}, {3, 4}}, Null}]
+=======
+>>>>>>> Adding more unit tests.
       ],
 
       VerificationTest[
         HypergraphToGraph[{{1, {3}, 2}, {2, 1, {3}}, {1, 1}, {2}}, "DirectedDistancePreserving"],
-        Graph[{1, 2, {3}}, {{{1, 1}, {1, 2}, {1, 3}, {1, 3}, {2, 1}, {2, 3}, {3, 2}}, Null}]
+        Graph[{1, 2, {3}}, {1 -> 1, 1 -> 2, 1 -> {3}, 1 -> {3}, 2 -> 1, 2 -> {3}, {3} -> 2}]
       ],
 
       (* "UndirectedDistancePreserving" *)
@@ -382,7 +385,72 @@
       VerificationTest[
         HypergraphToGraph[{{1, 2, 1}}, "UndirectedDistancePreserving"],
         Graph[{1}, {UndirectedEdge[1, 1], UndirectedEdge[1, 2], UndirectedEdge[2, 1]}]
+<<<<<<< HEAD
 >>>>>>> Updating unit tests.
+=======
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{Range[4]}, "UndirectedDistancePreserving"],
+        Graph[{1, 2, 3, 4}, {1 -> 2, 1 -> 3, 1 -> 4, 2 -> 3, 2 -> 4, 3 -> 4}, DirectedEdges -> False]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{1, {3}, 2}, {2, 1, {3}}, {1, 1}, {2}}, "UndirectedDistancePreserving"],
+        Graph[{1, 2, {3}}, {1 -> 1, 1 -> 2, 1 -> {3}, 1 -> {3}, 2 -> 1, 2 -> {3}, {3} -> 2}, DirectedEdges -> False]
+      ],
+
+      (* "StructurePreserving" *)
+      VerificationTest[
+        HypergraphToGraph[{}, "StructurePreserving"],
+        Graph[{}, {}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{}}, "StructurePreserving"],
+        Graph[{}, {}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{1}}, "StructurePreserving", VertexStyle -> Automatic, EdgeStyle -> Automatic],
+        Graph[
+          {{"Vertex", 1}, {"Hyperedge", 1, 1}},
+          {{"Hyperedge", 1, 1} -> {"Vertex", 1}}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{1, 1}}, "StructurePreserving", VertexStyle -> Automatic, EdgeStyle -> Automatic],
+        Graph[
+          {{"Vertex", 1}, {"Hyperedge", 1, 1}, {"Hyperedge", 1, 2}},
+          {
+            {"Hyperedge", 1, 1} -> {"Vertex", 1},
+            {"Hyperedge", 1, 1} -> {"Hyperedge", 1, 2},
+            {"Hyperedge", 1, 2} -> {"Vertex", 1}}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{1, 1, 1}}, "StructurePreserving", VertexStyle -> Automatic, EdgeStyle -> Automatic],
+        Graph[
+          {{"Vertex", 1}, {"Hyperedge", 1, 1}, {"Hyperedge", 1, 2}, {"Hyperedge", 1, 3}},
+          {
+            {"Hyperedge", 1, 1} -> {"Vertex", 1},
+            {"Hyperedge", 1, 1} -> {"Hyperedge", 1, 2},
+            {"Hyperedge", 1, 2} -> {"Vertex", 1},
+            {"Hyperedge", 1, 2} -> {"Hyperedge", 1, 3},
+            {"Hyperedge", 1, 3} -> {"Vertex", 1}}]
+      ],
+
+      VerificationTest[
+        HypergraphToGraph[{{1, 2, 1}}, "StructurePreserving", VertexStyle -> Automatic, EdgeStyle -> Automatic],
+        Graph[
+          {{"Vertex", 1}, {"Vertex", 2}, {"Hyperedge", 1, 1}, {"Hyperedge", 1, 2}, {"Hyperedge", 1, 3}},
+          {
+            {"Hyperedge", 1, 1} -> {"Vertex", 1},
+            {"Hyperedge", 1, 1} -> {"Hyperedge", 1, 2},
+            {"Hyperedge", 1, 2} -> {"Vertex", 2},
+            {"Hyperedge", 1, 2} -> {"Hyperedge", 1, 3},
+            {"Hyperedge", 1, 3} -> {"Vertex", 1}}]
+>>>>>>> Adding more unit tests.
       ]
     }
   |>
