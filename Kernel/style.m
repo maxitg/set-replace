@@ -67,8 +67,13 @@ PackageScope["$rulialGraphVertexIconFrameStyle"]
 PackageScope["$rulialGraphVertexIconFrameMargins"]
 PackageScope["$genericLinePlotStyles"]
 PackageScope["$genericGraphEdgeStyle"]
+<<<<<<< HEAD
 PackageScope["$structurePreservingHyperedgeVertexStyle"]
 PackageScope["$structurePreservingHyperedgeToHyperedgeEdgeStyle"]
+=======
+PackageScope["$structurePreservingVertexStyle"]
+PackageScope["$structurePreservingEdgeStyle"]
+>>>>>>> Moving VertexStyle and EdgeStyle of StructurePreserving method to style.m; Supporting cases of hypergraphs with empty hyperedges
 
 combinedOptionsProperties[plotFunction_][options__] := Sequence[
   "Options" -> {options},
@@ -301,6 +306,11 @@ style[$lightTheme] = <|
   $genericGraphEdgeStyle -> Directive[Hue[0.62, 0.3, 0.45], Opacity[0.7], AbsoluteThickness[1.5]],
 
   (* HypergraphToGraph Structure Preserving *)
+<<<<<<< HEAD
   $structurePreservingHyperedgeVertexStyle -> LightBlue,
   $structurePreservingHyperedgeToHyperedgeEdgeStyle -> Dashed
+=======
+  $structurePreservingVertexStyle -> {{"Hyperedge", _, _} -> LightBlue},
+  $structurePreservingEdgeStyle -> {DirectedEdge[{"Hyperedge", _, _}, {"Hyperedge", _, _}] -> Dashed}
+>>>>>>> Moving VertexStyle and EdgeStyle of StructurePreserving method to style.m; Supporting cases of hypergraphs with empty hyperedges
 |>;
