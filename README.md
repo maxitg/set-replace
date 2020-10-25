@@ -2026,7 +2026,7 @@ In[] := RulePlot[WolframModel[{{1, 2}} -> {{1, 3}, {1, 3}, {3, 2}}],
 
 ## Utility Functions
 
-[HypergraphToGraph](#hypergraphtograph) | [IndexHypergraph](#indexhypergraph) | [Subhypergraph](#subhypergraph) | [WolframModelRuleValue](#wolframmodelrulevalue) | [GeneralizedGridGraph](#generalizedgridgraph) | [HypergraphAutomorphismGroup](#hypergraphautomorphismgroup) | [HypergraphUnifications](#hypergraphunifications) | [WolframPhysicsProjectStyleData](#wolframphysicsprojectstyledata) | [Build Data](#build-data)
+[HypergraphToGraph](#hypergraphtograph) | [IndexHypergraph](#indexhypergraph) | [IsomorphicHypergraphQ](#isomorphichypergraphq) | [Subhypergraph](#subhypergraph) | [WolframModelRuleValue](#wolframmodelrulevalue) | [GeneralizedGridGraph](#generalizedgridgraph) | [HypergraphAutomorphismGroup](#hypergraphautomorphismgroup) | [HypergraphUnifications](#hypergraphunifications) | [WolframPhysicsProjectStyleData](#wolframphysicsprojectstyledata) | [Build Data](#build-data)
 
 ### HypergraphToGraph
 
@@ -2070,6 +2070,24 @@ Replace the vertices with integers starting from -10:
 ```wl
 In[]:= IndexHypergraph[{{x, y, z}, {w, y}, {z, {x}, {{y}}}}, -10]
 Out[]= {{-9, -8, -7}, {-10, -8}, {-7, -6, -5}}
+```
+
+### IsomorphicHypergraphQ
+
+**`IsomorphicHypergraphQ`** yields `True` for isomorphic (directed) hypergraphs, and `False` otherwise:
+
+```wl
+In[]:= IsomorphicHypergraphQ[
+  {{a, e, d}, {d, c}, {c, b}, {b, a}},
+  {{2, 4}, {4, 5, 1}, {1, 3}, {3, 2}}]
+Out[]= True
+```
+
+```wl
+In[]:= IsomorphicHypergraphQ[
+  {{a, e, d}, {d, c}, {c, b}, {b, a}},
+  {{2, 4}, {4, 3, 1}, {1, 3}, {5, 2}}]
+Out[]= False
 ```
 
 ### Subhypergraph
