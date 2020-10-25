@@ -177,10 +177,12 @@ hypergraphToGraph[
   ]
 
 (* Structure preserving *)
+toStructurePreserving[{hyperedgeIndex_, {}}, opts___] :=
+  Graph[{{"Hyperedge", hyperedgeIndex, 0}}, {}, opts]
 toStructurePreserving[{hyperedgeIndex_, hyperedge_}, opts___] := ModuleScope[
   hyperedgeVertices = Table[
     {"Hyperedge", hyperedgeIndex, vertexPositionIndex},
-    {vertexPositionIndex, 0, Length @ hyperedge}];
+    {vertexPositionIndex, 1, Length @ hyperedge}];
   vertexVertices = {"Vertex", #} & /@ hyperedge;
   Graph[
 <<<<<<< HEAD
@@ -204,7 +206,7 @@ toStructurePreserving[{hyperedgeIndex_, hyperedge_}, opts___] := ModuleScope[
 >>>>>>> Implemented Max's suggestions and ordered code.
     Join[
       DirectedEdge @@@ Partition[hyperedgeVertices, 2, 1],
-      Thread[DirectedEdge[Rest @ hyperedgeVertices, vertexVertices]]],
+      Thread[DirectedEdge[hyperedgeVertices, vertexVertices]]],
     opts]
 ]
 

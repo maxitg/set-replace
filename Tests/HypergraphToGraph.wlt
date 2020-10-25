@@ -397,12 +397,18 @@
 
       VerificationTest[
         HypergraphToGraph[{Range[4]}, "UndirectedDistancePreserving"],
-        Graph[{1, 2, 3, 4}, {1 -> 2, 1 -> 3, 1 -> 4, 2 -> 3, 2 -> 4, 3 -> 4}, DirectedEdges -> False]
+        Graph[
+          {1, 2, 3, 4},
+          {1 -> 2, 1 -> 3, 1 -> 4, 2 -> 3, 2 -> 4, 3 -> 4},
+          DirectedEdges -> False]
       ],
 
       VerificationTest[
         HypergraphToGraph[{{1, {3}, 2}, {2, 1, {3}}, {1, 1}, {2}}, "UndirectedDistancePreserving"],
-        Graph[{1, 2, {3}}, {1 -> 1, 1 -> 2, 1 -> {3}, 1 -> {3}, 2 -> 1, 2 -> {3}, {3} -> 2}, DirectedEdges -> False]
+        Graph[
+          {1, 2, {3}},
+          {1 -> 1, 1 -> 2, 1 -> {3}, 1 -> {3}, 2 -> 1, 2 -> {3}, {3} -> 2},
+          DirectedEdges -> False]
       ],
 
       (* "StructurePreserving" *)
@@ -419,16 +425,15 @@
       VerificationTest[
         getVertexEdgeList @ HypergraphToGraph[{{1}}, "StructurePreserving"],
         getVertexEdgeList @ Graph[
-          {{"Vertex", 1}, {"Hyperedge", 1, 0}, {"Hyperedge", 1, 1}},
-          {{"Hyperedge", 1, 0} -> {"Hyperedge", 1, 1}, {"Hyperedge", 1, 1} -> {"Vertex", 1}}]
+          {{"Vertex", 1}, {"Hyperedge", 1, 1}},
+          {{"Hyperedge", 1, 1} -> {"Vertex", 1}}]
       ],
 
       VerificationTest[
         getVertexEdgeList @ HypergraphToGraph[{{1, 1}}, "StructurePreserving"],
         getVertexEdgeList @ Graph[
-          {{"Vertex", 1}, {"Hyperedge", 1, 0}, {"Hyperedge", 1, 1}, {"Hyperedge", 1, 2}},
+          {{"Vertex", 1}, {"Hyperedge", 1, 1}, {"Hyperedge", 1, 2}},
           {
-            {"Hyperedge", 1, 0} -> {"Hyperedge", 1, 1},
             {"Hyperedge", 1, 1} -> {"Vertex", 1},
             {"Hyperedge", 1, 1} -> {"Hyperedge", 1, 2},
             {"Hyperedge", 1, 2} -> {"Vertex", 1}}]
@@ -439,12 +444,10 @@
         getVertexEdgeList @ Graph[
           {
             {"Vertex", 1},
-            {"Hyperedge", 1, 0}, 
             {"Hyperedge", 1, 1},
             {"Hyperedge", 1, 2},
             {"Hyperedge", 1, 3}},
           {
-            {"Hyperedge", 1, 0} -> {"Hyperedge", 1, 1},
             {"Hyperedge", 1, 1} -> {"Vertex", 1},
             {"Hyperedge", 1, 1} -> {"Hyperedge", 1, 2},
             {"Hyperedge", 1, 2} -> {"Vertex", 1},
@@ -458,12 +461,10 @@
           {
             {"Vertex", 1},
             {"Vertex", 2},
-            {"Hyperedge", 1, 0},
             {"Hyperedge", 1, 1},
             {"Hyperedge", 1, 2},
             {"Hyperedge", 1, 3}},
           {
-            {"Hyperedge", 1, 0} -> {"Hyperedge", 1, 1},
             {"Hyperedge", 1, 1} -> {"Vertex", 1},
             {"Hyperedge", 1, 1} -> {"Hyperedge", 1, 2},
             {"Hyperedge", 1, 2} -> {"Vertex", 2},
@@ -482,16 +483,13 @@
             {"Vertex", x},
             {"Vertex", y},
             {"Vertex", z},
-            {"Hyperedge", 1, 0},
             {"Hyperedge", 1, 1},
             {"Hyperedge", 1, 2},
             {"Hyperedge", 1, 3},
             {"Hyperedge", 1, 4},
-            {"Hyperedge", 2, 0},
             {"Hyperedge", 2, 1},
             {"Hyperedge", 2, 2}},
           {
-            {"Hyperedge", 1, 0} -> {"Hyperedge", 1, 1},
             {"Hyperedge", 1, 1} -> {"Vertex", x},
             {"Hyperedge", 1, 1} -> {"Hyperedge", 1, 2},
             {"Hyperedge", 1, 2} -> {"Vertex", x},
@@ -499,7 +497,6 @@
             {"Hyperedge", 1, 3} -> {"Vertex", y},
             {"Hyperedge", 1, 3} -> {"Hyperedge", 1, 4},
             {"Hyperedge", 1, 4} -> {"Vertex", z},
-            {"Hyperedge", 2, 0} -> {"Hyperedge", 2, 1},
             {"Hyperedge", 2, 1} -> {"Vertex", z},
             {"Hyperedge", 2, 1} -> {"Hyperedge", 2, 2},
             {"Hyperedge", 2, 2} -> {"Vertex", w}}]
