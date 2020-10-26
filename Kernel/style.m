@@ -194,8 +194,16 @@ $styleNames = KeySort /@ KeySort @ <|
   |>,
 
   "HypergraphStructurePreservingGraph" -> <|
+<<<<<<< HEAD
     "HyperedgeVertexStyle" -> $structurePreservingHyperedgeVertexStyle,
     "HyperedgeToHyperedgeEdgeStyle" -> $structurePreservingHyperedgeToHyperedgeEdgeStyle
+=======
+    "VertexStyle" -> $structurePreservingVertexStyle,
+    "EdgeStyle" -> $structurePreservingEdgeStyle,
+    combinedOptionsProperties[Graph][
+      VertexStyle -> $structurePreservingVertexStyle,
+      EdgeStyle -> $structurePreservingEdgeStyle]
+>>>>>>> Applying Maxs suggestions.
   |>
 |>;
 
