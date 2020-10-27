@@ -199,11 +199,15 @@ $styleNames = KeySort /@ KeySort @ <|
     "HyperedgeToHyperedgeEdgeStyle" -> $structurePreservingHyperedgeToHyperedgeEdgeStyle
 =======
     "VertexStyle" -> $structurePreservingVertexStyle,
+<<<<<<< HEAD
     "EdgeStyle" -> $structurePreservingEdgeStyle,
     combinedOptionsProperties[Graph][
       VertexStyle -> $structurePreservingVertexStyle,
       EdgeStyle -> $structurePreservingEdgeStyle]
 >>>>>>> Applying Maxs suggestions.
+=======
+    "EdgeStyle" -> $structurePreservingEdgeStyle
+>>>>>>> Fixed style handling in StructurePreserving method.
   |>
 |>;
 
@@ -315,10 +319,15 @@ style[$lightTheme] = <|
 
   (* HypergraphToGraph Structure Preserving *)
 <<<<<<< HEAD
+<<<<<<< HEAD
   $structurePreservingHyperedgeVertexStyle -> LightBlue,
   $structurePreservingHyperedgeToHyperedgeEdgeStyle -> Dashed
 =======
   $structurePreservingVertexStyle -> {{"Hyperedge", _, _} -> LightBlue},
   $structurePreservingEdgeStyle -> {DirectedEdge[{"Hyperedge", _, _}, {"Hyperedge", _, _}] -> Dashed}
 >>>>>>> Moving VertexStyle and EdgeStyle of StructurePreserving method to style.m; Supporting cases of hypergraphs with empty hyperedges
+=======
+  $structurePreservingVertexStyle -> LightBlue,
+  $structurePreservingEdgeStyle -> Dashed
+>>>>>>> Fixed style handling in StructurePreserving method.
 |>;

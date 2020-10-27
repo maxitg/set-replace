@@ -95,6 +95,7 @@ hypergraphToGraph[_, hgraph_ ? hypergraphQ, "StructurePreserving", opts : Option
     graphJoin[
       hyperedgeGraphs,
       VertexStyle -> Replace[OptionValue[Graph, {opts}, VertexStyle],
+<<<<<<< HEAD
         Automatic -> {{"Hyperedge", _, _} -> style[$lightTheme][$structurePreservingHyperedgeVertexStyle]}],
       EdgeStyle -> Replace[OptionValue[Graph, {opts}, EdgeStyle],
         Automatic -> {Rule[
@@ -217,8 +218,13 @@ hypergraphToGraph[_, hgraph_ ? hypergraphQ, "StructurePreserving", opts : Option
       hyperedgeGraphs,
       VertexStyle -> Replace[OptionValue[Graph, {opts}, VertexStyle],
         Automatic -> style[$lightTheme][$structurePreservingVertexStyle]],
+=======
+        Automatic -> {{"Hyperedge", _, _} -> style[$lightTheme][$structurePreservingVertexStyle]}],
+>>>>>>> Fixed style handling in StructurePreserving method.
       EdgeStyle -> Replace[OptionValue[Graph, {opts}, EdgeStyle],
-        Automatic -> style[$lightTheme][$structurePreservingEdgeStyle]],
+        Automatic -> {Rule[
+          DirectedEdge[{"Hyperedge", _, _}, {"Hyperedge", _, _}],
+          style[$lightTheme][$structurePreservingEdgeStyle]]}],
       opts]
   ]
 >>>>>>> Adding "UndirectedDistancePreserving"; Maxs suggestions.
