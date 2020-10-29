@@ -6,7 +6,7 @@
 
 ## **"DirectedDistancePreserving"**
 
-Convert a hypergraph to a directed graph with the same distance matrix:
+Converts a hypergraph to a directed graph with the same distance matrix, where distance between two vertices `v1` and `v2` in a hypergraph is defined as the minimum length of a path which connects `v1` and `v2` (i.e. 1 if both vertices belong to the same hyperedge):
 
 ```wl
 In[]:= HypergraphToGraph[
@@ -20,7 +20,7 @@ In[]:= HypergraphToGraph[
 
 ## **"UndirectedDistancePreserving"**
 
-Convert a hypergraph to an undirected graph with the same distance matrix, that is, each hyperedge is mapped to a complete subgraph:
+Converts a hypergraph to an undirected graph with the same distance matrix, that is, each hyperedge is mapped to a complete subgraph:
 
 ```wl
 In[]:= HypergraphToGraph[
@@ -34,7 +34,7 @@ In[]:= HypergraphToGraph[
 
 ## **"StructurePreserving"**
 
-Convert a hypergraph to a graph by preserving its structure. This is achieved by a one-to-one correspondance between vertices and hyperedges in the hypergraph and 2 different kind of vertices - `{"Hyperedge", hyperedgeIndex_, vertexIndex_}` and `{"Vertex", vertexName_}` - in the graph:
+Converts a hypergraph to a graph by preserving its structure. This is achieved by a one-to-one correspondance between vertices and hyperedges in the hypergraph and 2 different kind of vertices - `{"Hyperedge", hyperedgeIndex_, vertexIndex_}` and `{"Vertex", vertexName_}` - in the graph:
 
 ```wl
 In[]:= HypergraphToGraph[
