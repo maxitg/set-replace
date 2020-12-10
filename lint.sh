@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+setReplaceRoot=$(cd $(dirname $0) && pwd)
+cd "$setReplaceRoot"
 sourceFiles="libSetReplace/*pp libSetReplace/test/*pp"
 
 red="\\\033[0;31m"
@@ -46,6 +48,10 @@ if [ $exitStatus -eq 1 ]; then
 fi
 
 if ! cpplint --quiet --extensions=hpp,cpp $sourceFiles; then
+  exitStatus=1
+fi
+
+if ! ./scripts/checkLineWidth.sh; then
   exitStatus=1
 fi
 
