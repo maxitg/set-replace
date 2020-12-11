@@ -60,7 +60,7 @@ jobs:
       - run:
           name: Install Required Tools
           command: |
-            apk add --no-cache bash git g++ make cmake clang py-pip ncurses
+            apk add --no-cache bash git g++ make cmake clang py-pip grep
             pip install cpplint
 
       - run:
