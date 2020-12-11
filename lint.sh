@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -eo pipefail
 
 setReplaceRoot=$(cd $(dirname $0) && pwd)
 cd "$setReplaceRoot"
