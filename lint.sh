@@ -48,12 +48,8 @@ if [ $exitStatus -eq 1 ]; then
   echo "Found formatting errors. Run ./lint.sh -i to automatically fix by applying the printed patch."
 fi
 
-if ! cpplint --quiet --extensions=hpp,cpp $sourceFiles; then
-  exitStatus=1
-fi
+cpplint --quiet --extensions=hpp,cpp $sourceFiles || exitStatus=1
 
-if ! ./scripts/checkLineWidth.sh; then
-  exitStatus=1
-fi
+./scripts/checkLineWidth.sh || exitStatus=1
 
 exit $exitStatus
