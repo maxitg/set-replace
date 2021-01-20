@@ -27,11 +27,17 @@ SyntaxInformation[Multihistory] = {"ArgumentsPattern" -> {___}};
    Generations to implement a multihistoryType function for the types they generate? If we do the latter, we can allow
    Multihistories to have arbitrary heads and structure. *)
 
+(* DECISION: Multihistory[type_, payload_]. But we still need a function because it's one of the properties. It will just
+        work automatically for the Multihistory head (other heads like WolframModelEvolutionObject will need to
+        implement it). *)
+
 (* No declaration is required for a generator to create a new Multihistory type. Its job is to create a consistent
    internal structure. *)
 
 (* TODISCUSS: Should we collect all declarations first and then do postprocessing? Or should we keep consistent state
               after every new declaration (could be slower). *)
+
+(* DECISION: do postprocessing *)
 
 (* Note that this file should load before the files with any declarations. *)
 
@@ -82,6 +88,8 @@ declareMultihistoryProperty[propertySymbol_, syntaxInformation_] := ModuleScope[
          instead of the object. The benefit for doing this is that it will be impossible for implementation functions
          to start incorrectly relying on getting a specific type as an argument and doing illegal operations with it. *)
 
+(* STATUS: Need to design the properties first to determine if we need both types of the syntax. *)
+
 (* TODO: Add these to $propertyImplementations Association. *)
 
 declareMultihistoryPropertyImplementation[propertySymbol_,
@@ -94,4 +102,18 @@ declareMultihistoryPropertyImplementation[propertySymbol_,
                                           implementationFunction_,
                                           multihistoryPropertyList[properties_List]] := ModuleScope[
   Throw["Not implemented."];
+  (* propFunc2 = (Property2[#][multihistory] &); *)
 ];
+
+(* Usage examples:
+
+tokenCount[args___][obj_] := ...
+
+tokenCount[generation_][tokenList_, propFunc2_] := ModuleScope[
+  allTokens = tokenList[generation];
+  Length[allTokens]
+]
+
+tokenList[All][multihistory]
+
+*)
