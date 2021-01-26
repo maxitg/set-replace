@@ -8,38 +8,41 @@ PackageExport["MultihistoryConvert"]
 PackageScope["declareMultihistoryTranslation"]
 PackageScope["declareMultihistoryProperty"]
 PackageScope["declareMultihistoryPropertyImplementation"]
+PackageScope["multihistoryArgument"]
+PackageScope["multihistoryPropertyListArgument"]
+
 PackageScope["multihistoryType"]
-PackageScope["multihistoryPropertyList"]
+
+PackageScope["initializeMultihistory"]
 
 SetUsage @ "
 Multihistory[$$] is an object containing an evaluation of a non-deterministic computational system.
 ";
 
-SyntaxInformation[Multihistory] = {"ArgumentsPattern" -> {___}};
+SyntaxInformation[Multihistory] = {"ArgumentsPattern" -> {type_, data_}};
 
 (* Multihistory can contain an evaluation of any system, such as set/hypergraph substitution, string substitution, etc.
-   Internally, it's an association with a "Type" key that specifies what kind of system it is.
+   Internally, it has a type specifying what kind of system it is as a first argument, and any data as the second.
    Generators can create multihistories of any type of their choosing. Properties can take any type as an input.
-   This file contains function that automate conversion between types.
+   This file contains functions that automate conversion between types.
    Note that specific types should never appear in this file, as Multihistory infrastructure is not type specific. *)
 
-(* TODISCUSS: Should multihistories always be Associations with a "Type" key, or would it be better to require
-   Generations to implement a multihistoryType function for the types they generate? If we do the latter, we can allow
-   Multihistories to have arbitrary heads and structure. *)
+multihistoryType[Multihistory[type_, _]] := type;
 
-(* DECISION: Multihistory[type_, payload_]. But we still need a function because it's one of the properties. It will just
-        work automatically for the Multihistory head (other heads like WolframModelEvolutionObject will need to
-        implement it). *)
+General::notMultihistory = "The argument `1` is not a multihistory.";
+
+multihistoryType[multihistory_] := (
+  Message[$currentHead::notMultihistory, multihistory];
+  Throw[$Failed];
+);
 
 (* No declaration is required for a generator to create a new Multihistory type. Its job is to create a consistent
    internal structure. *)
 
-(* TODISCUSS: Should we collect all declarations first and then do postprocessing? Or should we keep consistent state
-              after every new declaration (could be slower). *)
-
-(* DECISION: do postprocessing *)
-
-(* Note that this file should load before the files with any declarations. *)
+(* The following functions collect the declarations for type conversions and properties. They are not processed
+   immediately. Instead, there is a separate function to process them (and define all relevant DownValues), which is
+   called from init.m.
+   Note that as a result this file should load before the files with any declarations. *)
 
 (* Some types can be convertable from one another. To convert one multihistory type to another, one can use a
    declareMultihistoryTranslation function. *)
@@ -47,14 +50,31 @@ SyntaxInformation[Multihistory] = {"ArgumentsPattern" -> {___}};
 $translations = {};
 
 declareMultihistoryTranslation[function_, fromType_, toType_] := ModuleScope[
-  AppendTo[$translations, {fromType, toType, function}];
+  AppendTo[$translations, {function, fromType, toType}];
 ];
+
+(* This function is called in init.m to combine translations to a Graph to allow multi-step conversions. *)
+
+initializeMultihistoryTranslations[] := (
+  $typesGraph = Graph[DirectedEdge @@@ Rest /@ $translations];
+  $translationFunctions = Thread[EdgeList[$typesGraph] -> (First /@ $translations)];
+);
 
 (* MultihistoryConvert is a public plumbing function that allows one to convert multihistories from one type to another
    for optimization or persistence reasons. *)
 
-MultihistoryConvert[toType_][multihistory_] := ModuleScope[
-  Throw["Not implemented."];
+MultihistoryConvert[args1___][args2___] := Scope[
+  $currentHead = MultihistoryConvert;
+  res = Catch[multihistoryConvert[args1][args2]];
+  res /; res =!= $Failed
+];
+
+multihistoryConvert[toType_][multihistory_] := ModuleScope[
+  fromType = multihistoryType[multihistory];
+  path = FindShortestPath[$typesGraph, fromType, toType];
+  edges = DirectedEdge @@@ Partition[path, 2, 1];
+  functions = $translationFunctions /@ edges;
+  Fold[#2[#1] &, multihistory, functions]
 ];
 
 (* declareMultihistoryProperty declares a new property, but does not provide any implementations for it. It is used to
@@ -94,16 +114,20 @@ declareMultihistoryProperty[propertySymbol_, syntaxInformation_] := ModuleScope[
 
 declareMultihistoryPropertyImplementation[propertySymbol_,
                                           implementationFunction_,
-                                          multihistoryType[type_]] := ModuleScope[
+                                          multihistoryArgument[type_]] := ModuleScope[
   Throw["Not implemented."];
 ];
 
 declareMultihistoryPropertyImplementation[propertySymbol_,
                                           implementationFunction_,
-                                          multihistoryPropertyList[properties_List]] := ModuleScope[
+                                          multihistoryPropertyListArgument[properties_List]] := ModuleScope[
   Throw["Not implemented."];
   (* propFunc2 = (Property2[#][multihistory] &); *)
 ];
+
+initializeMultihistory[] := (
+  initializeMultihistoryTranslations[];
+);
 
 (* Usage examples:
 

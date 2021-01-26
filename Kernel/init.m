@@ -27,9 +27,11 @@ Block[
     HoldPattern[ReturnFailure[msg_String, args___]] :> ReturnFailure[MessageName[$LHSHead, msg], args]
   }},
   Get[FileNameJoin[{$SetReplaceRootDirectory, "Kernel", "utilities.m"}]];
+  SetReplace`PackageScope`initializeMultihistory[];
 ];
 
 End[];
+
 EndPackage[];
 
 SetAttributes[#, {Protected, ReadProtected}] & /@ Evaluate @ Names @ "SetReplace`*";
