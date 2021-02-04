@@ -16,10 +16,10 @@ PackageScope["multihistoryType"]
 PackageScope["initializeMultihistory"]
 
 SetUsage @ "
-Multihistory[$$] is an object containing an evaluation of a non-deterministic computational system.
+Multihistory[$$] is an object containing evaluation of a non-deterministic computational system.
 ";
 
-SyntaxInformation[Multihistory] = {"ArgumentsPattern" -> {type_, data_}};
+SyntaxInformation[Multihistory] = {"ArgumentsPattern" -> {type_, internalData_}};
 
 (* Multihistory can contain an evaluation of any system, such as set/hypergraph substitution, string substitution, etc.
    Internally, it has a type specifying what kind of system it is as a first argument, and any data as the second.
@@ -29,12 +29,9 @@ SyntaxInformation[Multihistory] = {"ArgumentsPattern" -> {type_, data_}};
 
 multihistoryType[Multihistory[type_, _]] := type;
 
-General::notMultihistory = "The argument `1` is not a multihistory.";
+General::notMultihistory = "The argument `expr` is not a multihistory.";
 
-multihistoryType[multihistory_] := (
-  Message[$currentHead::notMultihistory, multihistory];
-  Throw[$Failed];
-);
+multihistoryType[multihistory_] := Throw[Failure["notMultihistory", <|"expr" -> multihistory|>]];
 
 (* No declaration is required for a generator to create a new Multihistory type. Its job is to create a consistent
    internal structure. *)
@@ -47,6 +44,9 @@ multihistoryType[multihistory_] := (
 (* Some types can be convertable from one another. To convert one multihistory type to another, one can use a
    declareMultihistoryTranslation function. *)
 
+(* Multihistory translation functions can throw failure objects, in which case a message will be generated with a name
+   corresponding to the Failure's type, and the keys passed to the message template. *)
+
 $translations = {};
 
 declareMultihistoryTranslation[function_, fromType_, toType_] := ModuleScope[
@@ -57,21 +57,28 @@ declareMultihistoryTranslation[function_, fromType_, toType_] := ModuleScope[
 
 initializeMultihistoryTranslations[] := (
   $typesGraph = Graph[DirectedEdge @@@ Rest /@ $translations];
-  $translationFunctions = Thread[EdgeList[$typesGraph] -> (First /@ $translations)];
+  $translationFunctions = Association[Thread[EdgeList[$typesGraph] -> (First /@ $translations)]];
+  With[{typeStrings = Cases[VertexList[$typesGraph], _String, All]},
+    FE`Evaluate[FEPrivate`AddSpecialArgCompletion["MultihistoryConvert" -> {typeStrings}]]];
 );
 
 (* MultihistoryConvert is a public plumbing function that allows one to convert multihistories from one type to another
    for optimization or persistence reasons. *)
 
-MultihistoryConvert[args1___][args2___] := Scope[
-  $currentHead = MultihistoryConvert;
+MultihistoryConvert[args1___][args2___] := ModuleScope[
   res = Catch[multihistoryConvert[args1][args2]];
+  If[FailureQ[res], Message[MessageName[MultihistoryConvert, res[[1]]], ]]
   res /; res =!= $Failed
 ];
 
 multihistoryConvert[toType_][multihistory_] := ModuleScope[
   fromType = multihistoryType[multihistory];
+  If[!VertexQ[$typesGraph, #1], Throw[Failure["unknownType", <|"fromOrTo" -> #2, "type" -> #1|>]]] & @@@
+    {{fromType, "from"}, {toType, "to"}};
   path = FindShortestPath[$typesGraph, fromType, toType];
+  If[path === {} && toType =!= fromType,
+    Throw[Failure["noConversionPath", <|"from" -> fromType, "to" -> toType|>]];
+  ];
   edges = DirectedEdge @@@ Partition[path, 2, 1];
   functions = $translationFunctions /@ edges;
   Fold[#2[#1] &, multihistory, functions]
