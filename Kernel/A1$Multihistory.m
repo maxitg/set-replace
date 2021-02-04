@@ -31,6 +31,8 @@ declareMessage[General::notMultihistory, "The argument `arg` in `expr` is not a 
 
 multihistoryType[multihistory_] := throw[Failure["notMultihistory", <|"arg" -> multihistory|>]];
 
+multihistoryQ[multihistory_] := Catch[multihistoryType[multihistory]; True, _ ? FailureQ, False &];
+
 (* No declaration is required for a generator to create a new Multihistory type. Its job is to create a consistent
    internal structure. *)
 
@@ -47,7 +49,8 @@ multihistoryType[multihistory_] := throw[Failure["notMultihistory", <|"arg" -> m
 
 $translations = {};
 
-declareMultihistoryTranslation[function_, fromType_, toType_] := AppendTo[$translations, {function, fromType, toType}];
+declareMultihistoryTranslation[function_, fromType_, toType_] :=
+  AppendTo[$translations, {function, type[fromType], type[toType]}];
 
 (* This function is called after all declarations to combine translations to a Graph to allow multi-step conversions. *)
 
@@ -57,7 +60,7 @@ initializeMultihistoryTranslations[] := (
 
   (* Find all strings used in the type names even on deeper levels (e.g., {"HypergraphSubstitutionSystem", 3}). *)
   With[{typeStrings = Cases[VertexList[$typesGraph], _String, All]},
-    FE`Evaluate[FEPrivate`AddSpecialArgCompletion["MultihistoryConvert" -> {typeStrings}]]
+    FE`Evaluate[FEPrivate`AddSpecialArgCompletion["MultihistoryConvert" -> {typeStrings}]];
   ];
 );
 
@@ -76,16 +79,14 @@ expr : MultihistoryConvert[args1___][args2___] := ModuleScope[
   result /; !FailureQ[result]
 ];
 
-declareMessage[General::unknownType,
-               "The type `type` `fromOrTo` which conversion is required in `expr` is not recognized."];
+declareMessage[General::unknownType, "The type `type` in `expr` is not recognized."];
 
 declareMessage[General::noConversionPath, "Cannot convert a Multihistory from `from` to `to` in `expr`."];
 
 multihistoryConvert[toType_][multihistory_] := ModuleScope[
   fromType = multihistoryType[multihistory];
-  If[!VertexQ[$typesGraph, #1], throw[Failure["unknownType", <|"fromOrTo" -> #2, "type" -> #1|>]]] & @@@
-    {{fromType, "from"}, {toType, "to"}};
-  path = FindShortestPath[$typesGraph, fromType, toType];
+  If[!VertexQ[$typesGraph, type[#]], throw[Failure["unknownType", <|"type" -> #|>]]] & /@ {fromType, toType};
+  path = FindShortestPath[$typesGraph, type[fromType], type[toType]];
   If[path === {} && toType =!= fromType,
     throw[Failure["noConversionPath", <|"from" -> fromType, "to" -> toType|>]];
   ];
@@ -102,11 +103,43 @@ multihistoryConvert[toType_][multihistory_] := ModuleScope[
    requested type.
    
    propertySymbol will need to be called as propertySymbol[args___][multihistory_] where multihistory can be of any
-   type convertable to the implemented one. *)
+   type convertable to the implemented one.
+   propertySymbol[][multihistory_] can also be called as propertySymbol[multihistory]. *)
 
-declareRawMultihistoryProperty[propertySymbol_Symbol, implementationFunction_, type_] := ModuleScope[
-  Null; (* TODO: implement *)
-]
+$rawProperties = {};
+
+declareRawMultihistoryProperty[implementationFunction_, fromType_, toProperty_Symbol] :=
+  AppendTo[$rawProperties, {implementationFunction, type[fromType], property[toProperty]}];
+
+(* This function is called after all declarations to combine implementations to a Graph to allow multi-step conversions
+   and to define DownValues for all property symbols. *)
+
+initializeRawMultihistoryProperties[] := Module[{newEdges},
+  newEdges = DirectedEdge @@@ Rest /@ $rawProperties;
+  $typesGraph = EdgeAdd[$typesGraph, newEdges];
+  $propertyEvaluationFunctions = Association[Thread[newEdges -> (First /@ $rawProperties)]];
+
+  defineDownValuesForProperty /@ Cases[VertexList[$typesGraph], property[name_] :> name, {1}];
+];
+
+declareMessage[General::noPropertyPath,
+               "Cannot compute the property `property` for Multihistory type `type` in `expr`."];
+
+Attributes[defineDownValuesForProperty] = {HoldFirst};
+defineDownValuesForProperty[publicProperty_] := (
+  publicProperty[args___][multihistory_ ? multihistoryQ] := ModuleScope[
+    fromType = multihistoryType[multihistory];
+    If[!VertexQ[$typesGraph, type[fromType]], throw[Failure["unknownType", <|"type" -> fromType|>]]];
+    path = FindShortestPath[$typesGraph, type[fromType], property[publicProperty]];
+    If[path === {},
+      throw[Failure["noPropertyPath", <|"type" -> fromType, "property" -> publicProperty|>]];
+    ];
+    expectedType = multihistoryConvert[path[[-2]]][multihistory];
+    
+  ];
+
+  publicProperty[multihistory_ ? multihistoryQ] := property[][multihistory];
+);
 
 (* declareMultihistoryPropertyFromOtherProperties declares an implementation for a property that takes other properties
    as arguments. The relevant properties will be given to implementationFunction as functions. *)
@@ -118,20 +151,21 @@ declareRawMultihistoryProperty[propertySymbol_Symbol, implementationFunction_, t
    propertySymbol will be possible to use the same way as in declareRawMultihistoryProperty and will work as long as
    all requested properties are implemented with either approach. *)
 
-declareCompositeMultihistoryProperty[propertySymbol_Symbol, implementationFunction_, properties_List] := ModuleScope[
+declareCompositeMultihistoryProperty[implementationFunction_, fromProperties_List, toProperty_Symbol] := ModuleScope[
   Null; (* TODO: implement *)
-]
+];
 
 (* This function is called after all declarations to combine implementations to a Graph to allow multi-step conversions
    and to define DownValues for all property symbols. *)
 
-initializeMultihistoryProperties[] := (
+initializeCompositeMultihistoryProperties[] := (
   Null; (* TODO: implement *)
-)
+);
 
 (* This function is called in init.m after all other files are loaded. *)
 
 initializeMultihistory[] := (
   initializeMultihistoryTranslations[];
-  initializeMultihistoryProperties[];
+  initializeRawMultihistoryProperties[];
+  initializeCompositeMultihistoryProperties[];
 );
