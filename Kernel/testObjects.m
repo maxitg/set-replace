@@ -27,8 +27,21 @@ evenToHalfInteger[Multihistory["EvenInteger", n_]] := throw[Failure["notEven", <
 
 (** Properties **)
 
+(*** Description ***)
+
 declareRawMultihistoryProperty[evenIntegerDescription, "EvenInteger", Description];
-evenIntegerDescription[][Multihistory[_, n_]] := "I am an integer `n`.";
+
+evenIntegerDescription[][Multihistory[_, n_]] := "I am an integer " <> ToString[n] <> ".";
+
+evenIntegerDescription[args__][_] := throwInvalidPropertyArgumentCount[0, Length[{args}]];
+
+(*** MultipliedHalf ***)
 
 declareRawMultihistoryProperty[multipliedNumber, "HalfInteger", MultipliedHalf];
-multipliedNumber[factor_][Multihistory[_, n_]] := factor * n;
+
+multipliedNumber[factor_Integer][Multihistory[_, n_]] := factor * n;
+
+declareMessage[General::nonIntegerFactor, "The factor `factor` in `expr` must be an integer."];
+multipliedNumber[factor : Except[_Integer]][_] := throw[Failure["nonIntegerFactor", <|"factor" -> factor|>]];
+
+multipliedNumber[args___][_] /; Length[{args}] != 1 := throwInvalidPropertyArgumentCount[1, Length[{args}]];

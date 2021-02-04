@@ -8,8 +8,8 @@ PackageExport["MultihistoryConvert"]
 PackageScope["declareMultihistoryTranslation"]
 PackageScope["declareRawMultihistoryProperty"]
 PackageScope["declareCompositeMultihistoryProperty"]
-
 PackageScope["multihistoryType"]
+PackageScope["throwInvalidPropertyArgumentCount"]
 
 PackageScope["initializeMultihistory"]
 
@@ -29,7 +29,7 @@ multihistoryType[Multihistory[type_, _]] := type;
 
 declareMessage[General::notMultihistory, "The argument `arg` in `expr` is not a multihistory."];
 
-multihistoryType[multihistory_] := throw[Failure["notMultihistory", <|"arg" -> multihistory|>]];
+multihistoryType[arg_] := throw[Failure["notMultihistory", <|"arg" -> arg|>]];
 
 multihistoryQ[multihistory_] := Catch[multihistoryType[multihistory]; True, _ ? FailureQ, False &];
 
@@ -101,7 +101,7 @@ multihistoryConvert[toType_][multihistory_] := ModuleScope[
 
 (* Implementation has the form: implementationFunction[args___][multihistory_] where multihistory is always of the
    requested type.
-   
+
    propertySymbol will need to be called as propertySymbol[args___][multihistory_] where multihistory can be of any
    type convertable to the implemented one.
    propertySymbol[][multihistory_] can also be called as propertySymbol[multihistory]. *)
@@ -121,25 +121,6 @@ initializeRawMultihistoryProperties[] := Module[{newEdges},
 
   defineDownValuesForProperty /@ Cases[VertexList[$typesGraph], property[name_] :> name, {1}];
 ];
-
-declareMessage[General::noPropertyPath,
-               "Cannot compute the property `property` for Multihistory type `type` in `expr`."];
-
-Attributes[defineDownValuesForProperty] = {HoldFirst};
-defineDownValuesForProperty[publicProperty_] := (
-  publicProperty[args___][multihistory_ ? multihistoryQ] := ModuleScope[
-    fromType = multihistoryType[multihistory];
-    If[!VertexQ[$typesGraph, type[fromType]], throw[Failure["unknownType", <|"type" -> fromType|>]]];
-    path = FindShortestPath[$typesGraph, type[fromType], property[publicProperty]];
-    If[path === {},
-      throw[Failure["noPropertyPath", <|"type" -> fromType, "property" -> publicProperty|>]];
-    ];
-    expectedType = multihistoryConvert[path[[-2]]][multihistory];
-    
-  ];
-
-  publicProperty[multihistory_ ? multihistoryQ] := property[][multihistory];
-);
 
 (* declareMultihistoryPropertyFromOtherProperties declares an implementation for a property that takes other properties
    as arguments. The relevant properties will be given to implementationFunction as functions. *)
@@ -168,4 +149,71 @@ initializeMultihistory[] := (
   initializeMultihistoryTranslations[];
   initializeRawMultihistoryProperties[];
   initializeCompositeMultihistoryProperties[];
+);
+
+(* defineDownValuesForProperty defines both the operator form and the normal form for a property symbol.
+   The down values it defines first search for the best path to compute a property and then evaluate the corresponding
+   property implementation/translation functions. *)
+
+declareMessage[General::noPropertyPath,
+               "Cannot compute the property `property` for Multihistory type `type` in `expr`."];
+
+(* invalidPropertyArgumentCount message is not thrown here, but is defined here because it needs to be intercepted in
+   case a property is used not as an operator form (in which case expected and actual argument counts should be
+   incremented by one). *)
+
+declareMessage[
+  General::invalidPropertyArgumentCount,
+  "`expectedCount` argument`expectedCountPluralWordEnding` expected in `expr` instead of given `actualCount`."];
+
+throwInvalidPropertyArgumentCount[expectedCount_, actualCount_] :=
+  throw[Failure["invalidPropertyArgumentCount", <|"expectedCount" -> expectedCount,
+                                                  "expectedCountPluralWordEnding" -> If[expectedCount == 1, "", "s"],
+                                                  "actualCount" -> actualCount|>]];
+
+incrementArgumentCounts[Failure[name : "invalidPropertyArgumentCount", args_]] :=
+  Failure[name, ReplacePart[args, {"expectedCount" -> args["expectedCount"] + 1,
+                                   "actualCount" -> args["actualCount"] + 1,
+                                   "expectedCountPluralWordEnding" -> If[args["expectedCount"] == 0, "", "s"]}]];
+
+incrementArgumentCounts[arg_] := arg;
+
+(* Note that it's not possible to have another Multihistory as a first argument to the property, i.e.,
+   property[auxiliaryMultihistory][mainMultihistoryArgument], because in that case it's impossible to distinguish
+   for which multihistory the property should be evaluated. *)
+
+declareMessage[General::invalidPropertyOperatorArgument,
+               "A single multihistory argument is expected to the operator form `expr`."];
+
+Attributes[defineDownValuesForProperty] = {HoldFirst};
+defineDownValuesForProperty[publicProperty_] := (
+  expr : publicProperty[args___][multihistory___] := ModuleScope[
+    result = Catch[propertyImplementation[publicProperty][args][multihistory],
+                   _ ? FailureQ,
+                   message[publicProperty, #, <|"expr" -> HoldForm[expr], "head" -> publicProperty|>] &];
+    result /; !FailureQ[result]
+  ];
+
+  expr : publicProperty[multihistory_ ? multihistoryQ, args___] := ModuleScope[
+    result = Catch[propertyImplementation[publicProperty][args][multihistory],
+                   _ ? FailureQ,
+                   message[publicProperty,
+                           incrementArgumentCounts[#],
+                           <|"expr" -> HoldForm[expr], "head" -> publicProperty|>] &];
+    result /; !FailureQ[result]
+  ];
+
+  propertyImplementation[publicProperty][args___][multihistory_] := ModuleScope[
+    fromType = multihistoryType[multihistory];
+    If[!VertexQ[$typesGraph, type[fromType]], throw[Failure["unknownType", <|"type" -> fromType|>]]];
+    path = FindShortestPath[$typesGraph, type[fromType], property[publicProperty]];
+    If[path === {},
+      throw[Failure["noPropertyPath", <|"type" -> fromType, "property" -> publicProperty|>]];
+    ];
+    expectedTypeMultihistory = multihistoryConvert[path[[-2, 1]]][multihistory];
+    propertyFunction = $propertyEvaluationFunctions[DirectedEdge[path[[-2]], path[[-1]]]];
+    propertyFunction[args][expectedTypeMultihistory]
+  ];
+
+  propertyImplementation[publicProperty][args1___][args2___] := throw[Failure["invalidPropertyOperatorArgument", <||>]];
 );
