@@ -5,10 +5,10 @@ PackageImport["GeneralUtilities`"]
 PackageExport["TypeConvert"]
 
 PackageScope["declareTypeTranslation"]
-PackageScope["declareRawProperty"]
-PackageScope["declareCompositeProperty"]
+PackageScope["declareRawMethod"]
+PackageScope["declareCompositeMethod"]
 PackageScope["objectType"]
-PackageScope["throwInvalidPropertyArgumentCount"]
+PackageScope["throwInvalidMethodArgumentCount"]
 
 PackageScope["initializeTypeSystem"]
 
@@ -24,7 +24,7 @@ objectQ[object_] := Catch[objectType[object]; True, _ ? FailureQ, False &];
 (* No declaration is required for a generator to create a new object type. Its job is to create a consistent internal
    structure. *)
 
-(* The following functions collect the declarations for type conversions and properties. They are not processed
+(* The following functions collect the declarations for type conversions and methods. They are not processed
    immediately. Instead, there is a separate function to process them (and define all relevant DownValues), which is
    called from init.m. Note that as a result this file should load before the files with any declarations. *)
 
@@ -82,47 +82,47 @@ typeConvert[toType_][object_] := ModuleScope[
   Fold[#2[#1] &, object, functions]
 ];
 
-(* declareRawProperty declares an implementation for a property for a particular object type. If requested for another
-  type, an attempt will be made to convert to a type for which an implementation is available. *)
+(* declareRawMethod declares an implementation for a method for a particular object type. If requested for another type,
+   an attempt will be made to convert to a type for which an implementation is available. *)
 
 (* Implementation has the form: implementationFunction[args___][object_] where object is always of the requested type.
-   toProperty will need to be called as toProperty[args___][object_] or toProperty[object_, args___] where object can be
-   of any type convertable to the implemented one. *)
+   toMethod will need to be called as toMethod[args___][object_] or toMethod[object_, args___] where object can be of
+   any type convertable to the implemented one. *)
 
-$rawProperties = {};
+$rawMethods = {};
 
-declareRawProperty[implementationFunction_, fromType_, toProperty_Symbol] :=
-  AppendTo[$rawProperties, {implementationFunction, type[fromType], property[toProperty]}];
+declareRawMethod[implementationFunction_, fromType_, toMethod_Symbol] :=
+  AppendTo[$rawMethods, {implementationFunction, type[fromType], method[toMethod]}];
 
 (* This function is called after all declarations to combine implementations to a Graph to allow multi-step conversions
-   and to define DownValues for all property symbols. *)
+   and to define DownValues for all method symbols. *)
 
-initializeRawProperties[] := Module[{newEdges},
-  newEdges = DirectedEdge @@@ Rest /@ $rawProperties;
+initializeRawMethods[] := Module[{newEdges},
+  newEdges = DirectedEdge @@@ Rest /@ $rawMethods;
   $typeGraph = EdgeAdd[$typeGraph, newEdges];
-  $propertyEvaluationFunctions = Association[Thread[newEdges -> (First /@ $rawProperties)]];
+  $methodEvaluationFunctions = Association[Thread[newEdges -> (First /@ $rawMethods)]];
 
-  defineDownValuesForProperty /@ Cases[VertexList[$typeGraph], property[name_] :> name, {1}];
+  defineDownValuesForMethod /@ Cases[VertexList[$typeGraph], method[name_] :> name, {1}];
 ];
 
-(* declareCompositeProperty declares an implementation for a property that takes other properties as arguments. The
-  relevant properties will be given to implementationFunction as functions. *)
+(* declareCompositeMethod declares an implementation for a method that takes other methods as arguments. The relevant
+   methods will be given to implementationFunction as functions. *)
 
-(* Implementation has the form: implementationFunction[args___][propertyFunction$1_, propertyFunction$2_, ...] where
-   propertyFunction$i should be called as propertyFunction$i[args], i.e., without an object argument. Correct object
-   will be used automatically. *)
+(* Implementation has the form: implementationFunction[args___][methodFunction$1_, methodFunction$2_, ...] where
+   methodFunction$i should be called as methodFunction$i[args], i.e., without an object argument. Correct object will
+   be used automatically. *)
 
-(* toProperty will be possible to use the same way as in declareRawProperty and will work as long as all requested
-   properties are implemented with either approach. *)
+(* toMethod will be possible to use the same way as in declareRawMethod and will work as long as all requested methods
+   are implemented with either approach. *)
 
-declareCompositeProperty[implementationFunction_, fromProperties_List, toProperty_Symbol] := ModuleScope[
+declareCompositeMethod[implementationFunction_, fromMethods_List, toMethod_Symbol] := ModuleScope[
   Null; (* TODO: implement *)
 ];
 
 (* This function is called after all declarations to combine implementations to a Graph to allow multi-step conversions
-   and to define DownValues for all property symbols. *)
+   and to define DownValues for all method symbols. *)
 
-initializeCompositeProperties[] := (
+initializeCompositeMethods[] := (
   Null; (* TODO: implement *)
 );
 
@@ -130,72 +130,72 @@ initializeCompositeProperties[] := (
 
 initializeTypeSystem[] := (
   initializeTypeSystemTranslations[];
-  initializeRawProperties[];
-  initializeCompositeProperties[];
+  initializeRawMethods[];
+  initializeCompositeMethods[];
 );
 
-(* defineDownValuesForProperty defines both the operator form and the normal form for a property symbol. The DownValues
-   it defines first search for the best path to compute a property and then evaluate the corresponding property
+(* defineDownValuesForMethod defines both the operator form and the normal form for a method symbol. The DownValues it
+   defines first search for the best path to compute a method and then evaluate the corresponding method
    implementation/translation functions. *)
 
-declareMessage[General::noPropertyPath, "Cannot compute the property `property` for type `type` in `expr`."];
+declareMessage[General::noMethodPath, "Cannot compute the method `method` for type `type` in `expr`."];
 
-(* invalidPropertyArgumentCount message is not thrown here, but is defined here because it needs to be intercepted in
-   case a property is used not as an operator form (in which case expected and actual argument counts should be
-   incremented by one). *)
+(* invalidMethodArgumentCount message is not thrown here, but is defined here because it needs to be intercepted in case
+   a method is used not as an operator form (in which case expected and actual argument counts should be incremented by
+   one). *)
 
 declareMessage[
-  General::invalidPropertyArgumentCount,
+  General::invalidMethodArgumentCount,
   "`expectedCount` argument`expectedCountPluralWordEnding` expected in `expr` instead of given `actualCount`."];
 
-throwInvalidPropertyArgumentCount[expectedCount_, actualCount_] :=
-  throw[Failure["invalidPropertyArgumentCount", <|"expectedCount" -> expectedCount,
-                                                  "expectedCountPluralWordEnding" -> If[expectedCount == 1, "", "s"],
-                                                  "actualCount" -> actualCount|>]];
+throwInvalidMethodArgumentCount[expectedCount_, actualCount_] :=
+  throw[Failure["invalidMethodArgumentCount", <|"expectedCount" -> expectedCount,
+                                                "expectedCountPluralWordEnding" -> If[expectedCount == 1, "", "s"],
+                                                "actualCount" -> actualCount|>]];
 
-incrementArgumentCounts[Failure[name : "invalidPropertyArgumentCount", args_]] :=
+incrementArgumentCounts[Failure[name : "invalidMethodArgumentCount", args_]] :=
   Failure[name, ReplacePart[args, {"expectedCount" -> args["expectedCount"] + 1,
                                    "actualCount" -> args["actualCount"] + 1,
                                    "expectedCountPluralWordEnding" -> If[args["expectedCount"] == 0, "", "s"]}]];
 
 incrementArgumentCounts[arg_] := arg;
 
-(* Note that it's not possible to have another object as a first argument to the property, i.e.,
-   property[auxiliaryObject][mainObjectArgument], because in that case it's impossible to distinguish for which object
-   the property should be evaluated. *)
+(* Note that it's not possible to have another object as a first argument to the method, i.e.,
+   method[auxiliaryObject][mainObjectArgument], because in that case it's impossible to distinguish for which object
+   the method should be evaluated. *)
 
-declareMessage[General::invalidPropertyOperatorArgument,
+declareMessage[General::invalidMethodOperatorArgument,
                "A single object argument is expected to the operator form `expr`."];
 
-Attributes[defineDownValuesForProperty] = {HoldFirst};
-defineDownValuesForProperty[publicProperty_] := (
-  expr : publicProperty[args___][object___] := ModuleScope[
-    result = Catch[propertyImplementation[publicProperty][args][object],
+Attributes[defineDownValuesForMethod] = {HoldFirst};
+defineDownValuesForMethod[publicMethod_] := (
+  expr : publicMethod[args___][object___] := ModuleScope[
+    result = Catch[methodImplementation[publicMethod][args][object],
                    _ ? FailureQ,
-                   message[publicProperty, #, <|"expr" -> HoldForm[expr], "head" -> publicProperty|>] &];
+                   message[publicMethod, #, <|"expr" -> HoldForm[expr], "head" -> publicMethod|>] &];
     result /; !FailureQ[result]
   ];
 
-  expr : publicProperty[object_ ? objectQ, args___] := ModuleScope[
-    result = Catch[propertyImplementation[publicProperty][args][object],
+  expr : publicMethod[object_ ? objectQ, args___] := ModuleScope[
+    result = Catch[methodImplementation[publicMethod][args][object],
                    _ ? FailureQ,
-                   message[publicProperty,
+                   message[publicMethod,
                            incrementArgumentCounts[#],
-                           <|"expr" -> HoldForm[expr], "head" -> publicProperty|>] &];
+                           <|"expr" -> HoldForm[expr], "head" -> publicMethod|>] &];
     result /; !FailureQ[result]
   ];
 
-  propertyImplementation[publicProperty][args___][object_] := ModuleScope[
+  methodImplementation[publicMethod][args___][object_] := ModuleScope[
     fromType = objectType[object];
     If[!VertexQ[$typeGraph, type[fromType]], throw[Failure["unknownType", <|"type" -> fromType|>]]];
-    path = FindShortestPath[$typeGraph, type[fromType], property[publicProperty]];
+    path = FindShortestPath[$typeGraph, type[fromType], method[publicMethod]];
     If[path === {},
-      throw[Failure["noPropertyPath", <|"type" -> fromType, "property" -> publicProperty|>]];
+      throw[Failure["noMethodPath", <|"type" -> fromType, "method" -> publicMethod|>]];
     ];
     expectedTypeObject = typeConvert[path[[-2, 1]]][object];
-    propertyFunction = $propertyEvaluationFunctions[DirectedEdge[path[[-2]], path[[-1]]]];
-    propertyFunction[args][expectedTypeObject]
+    methodFunction = methodEvaluationFunctions[DirectedEdge[path[[-2]], path[[-1]]]];
+    methodFunction[args][expectedTypeObject]
   ];
 
-  propertyImplementation[publicProperty][args1___][args2___] := throw[Failure["invalidPropertyOperatorArgument", <||>]];
+  methodImplementation[publicMethod][args1___][args2___] := throw[Failure["invalidMethodOperatorArgument", <||>]];
 );
