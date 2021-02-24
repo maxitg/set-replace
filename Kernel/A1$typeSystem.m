@@ -193,7 +193,7 @@ defineDownValuesForMethod[publicMethod_] := (
       throw[Failure["noMethodPath", <|"type" -> fromType, "method" -> publicMethod|>]];
     ];
     expectedTypeObject = typeConvert[path[[-2, 1]]][object];
-    methodFunction = methodEvaluationFunctions[DirectedEdge[path[[-2]], path[[-1]]]];
+    methodFunction = $methodEvaluationFunctions[DirectedEdge[path[[-2]], path[[-1]]]];
     methodFunction[args][expectedTypeObject]
   ];
 
