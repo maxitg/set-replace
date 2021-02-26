@@ -105,7 +105,7 @@ initializeRawMethods[] := Module[{newEdges},
   $typeGraph = EdgeAdd[$typeGraph, newEdges];
   $methodEvaluationFunctions = Association[Thread[newEdges -> (First /@ $rawMethods)]];
 
-  defineDownValuesForMethod /@ Cases[VertexList[$typeGraph], method[name_] :> name, {1}];
+  defineDownValuesForMethod /@ First /@ VertexList[$typeGraph, _method];
 ];
 
 (* declareCompositeMethod declares an implementation for a method that takes other methods as arguments. The relevant
