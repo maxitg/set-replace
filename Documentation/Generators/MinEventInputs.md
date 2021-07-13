@@ -7,7 +7,7 @@ Compare, for example, `MinEventInputs -> 0` (default):
 
 ```wl
 In[] := #["ExpressionsEventsGraph", VertexLabels -> Placed[Automatic, After]] & @
-  SetReplaceTypeConvert[{WolframModelEvolutionObject, 2}] @
+  SetReplaceTypeConvert[WolframModelEvolutionObject] @
     GenerateMultihistory[
       MultisetSubstitutionSystem[{a___} :> {Total[{a}]}], {1, 2, 3}, MinEventInputs -> 0, MaxEvents -> 10]
 ```
@@ -18,7 +18,7 @@ and `MinEventInputs -> 2`:
 
 ```wl
 In[] := #["ExpressionsEventsGraph", VertexLabels -> Placed[Automatic, After]] & @
-  SetReplaceTypeConvert[{WolframModelEvolutionObject, 2}] @
+  SetReplaceTypeConvert[WolframModelEvolutionObject] @
     GenerateMultihistory[
       MultisetSubstitutionSystem[{a___} :> {Total[{a}]}], {1, 2, 3}, MinEventInputs -> 2, MaxEvents -> 10]
 ```
