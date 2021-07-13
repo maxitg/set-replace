@@ -33,7 +33,7 @@
         (* Token deduplication not yet supported *)
         testUnevaluated[
           GenerateMultihistory[MultisetSubstitutionSystem[{1} -> {2}], {}, All, anEventOrdering, {}] @ {1},
-          {GenerateMultihistory::multisetTokenDeduplicationNotImplemented}],
+          {GenerateMultihistory::invalidTokenDeduplication}],
 
         (* Parameters *)
         testUnevaluated[

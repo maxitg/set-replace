@@ -36,8 +36,9 @@ $implementations = CreateDataStructure["HashTable"];
 $eventSelectionSpecs = CreateDataStructure["HashTable"];    (* generator -> <|key -> {default, constraint}, ...|> *)
 $eventOrderings = CreateDataStructure["HashTable"];         (* generator -> {ordering, ...} *)
 $stoppingConditionSpecs = CreateDataStructure["HashTable"]; (* generator -> <|key -> {default, constraint}, ...|> *)
+$tokenDeduplications = CreateDataStructure["HashTable"];    (* generator -> tokenDeduplication |>*)
 
-$possibleConstraints = None | "NonNegativeIntegerOrInfinity";
+$possibleConstraints = None | "NonNegativeIntegerOrInfinity" | "PositiveNumberOrInfinity" | _List;
 
 $constraintsSpecPattern =
   _Association ? (AllTrue[StringQ] @ Keys[#] && MatchQ[Values[#], {{_, $possibleConstraints}...}] &);
@@ -60,12 +61,14 @@ $constraintsSpecPattern =
 declareMultihistoryGenerator[implementationFunction_,
                              systemType_,
                              eventSelectionSpec : $constraintsSpecPattern,
-                             eventOrderings : {___String},
-                             stoppingConditionSpec : $constraintsSpecPattern] := (
+                             eventOrderings : {(_String | -_String) ...},
+                             stoppingConditionSpec : $constraintsSpecPattern,
+                             tokenDeduplication : (None | _List)] := (
   $implementations["Insert", systemType -> implementationFunction];
   $eventSelectionSpecs["Insert", systemType -> eventSelectionSpec];
   $eventOrderings["Insert", systemType -> eventOrderings];
   $stoppingConditionSpecs["Insert", systemType -> stoppingConditionSpec];
+  $tokenDeduplications["Insert", systemType -> tokenDeduplication];
 );
 
 declareMessage[General::invalidGeneratorDeclaration,
@@ -92,7 +95,7 @@ generateMultihistory[system_ /; $implementations["KeyExistsQ", Head[system]],
   $implementations["Lookup", Head[system]][
     system,
     parseConstraints["invalidEventSelection"][$eventSelectionSpecs["Lookup", Head[system]]][rawEventSelection],
-    parseTokenDeduplication[rawTokenDeduplication],
+    parseTokenDeduplication[$tokenDeduplications["Lookup", Head[system]]][rawTokenDeduplication],
     parseEventOrdering[$eventOrderings["Lookup", Head[system]]][rawEventOrdering],
     parseConstraints["invalidStoppingCondition"][$stoppingConditionSpecs["Lookup", Head[system]]][rawStoppingCondition],
     init
@@ -119,25 +122,35 @@ declareMessage[General::invalidStoppingCondition,
 parseConstraints[errorName_][specs_][originalArgument_, _] :=
   throw[Failure[errorName, <|"argument" -> originalArgument, "choices" -> Keys[specs]|>]];
 
-$tokenDeduplicationValues = {None, All};
-parseTokenDeduplication[value : Alternatives @@ $tokenDeduplicationValues] := value;
+parseTokenDeduplication[None][None] := None;
+parseTokenDeduplication[supportedDeduplications_][argument_] /; MemberQ[supportedDeduplications, argument] := argument;
 declareMessage[
-  General::invalidTokenDeduplication, "Token deduplication `value` in `expr` can only be one of `choices`."];
-parseTokenDeduplication[value_] :=
-  throw[Failure["invalidTokenDeduplication", <|"value" -> value, "choices" -> $tokenDeduplicationValues|>]];
+  General::invalidTokenDeduplication, "Token deduplication spec `argument` in `expr` can only be one of `choices`."];
+parseTokenDeduplication[supportedDeduplications_][argument_] :=
+  throw[Failure["invalidTokenDeduplication", <|"argument" -> argument, "choices" -> supportedDeduplications|>]];
 
-parseEventOrdering[supportedFunctions_][argument_List] /; SubsetQ[supportedFunctions, argument] := argument;
+parseEventOrdering[supportedOrderings_][argument_List] /; SubsetQ[supportedOrderings, argument] := argument;
 declareMessage[
   General::invalidEventOrdering, "Event ordering spec `argument` in `expr` should be a List of values from `choices`."];
-parseEventOrdering[supportedFunctions_][argument_] :=
-  throw[Failure["invalidEventOrdering", <|"argument" -> argument, "choices" -> supportedFunctions|>]];
+parseEventOrdering[supportedOrderings_][argument_] :=
+  throw[Failure["invalidEventOrdering", <|"argument" -> argument, "choices" -> supportedOrderings|>]];
 
 checkParameter[_, None][value_] := value;
+checkParameter[_, choices_List][value_] /; MemberQ[choices, value] := value;
+declareMessage[General::invalidChoiceParameter,
+               "Parameter `name` in `expr` can only be one of `choices`."];
+checkParameter[name_, choices_List][_] :=
+  throw[Failure["invalidChoiceParameter", <|"name" -> name, "choices" -> choices|>]];
 checkParameter[_, "NonNegativeIntegerOrInfinity"][value : (_Integer ? (# >= 0 &)) | Infinity] := value;
 declareMessage[General::notNonNegativeIntegerOrInfinityParameter,
                "Parameter `name` in `expr` is expected to be a non-negative integer or Infinity."];
 checkParameter[name_, "NonNegativeIntegerOrInfinity"][_] :=
   throw[Failure["notNonNegativeIntegerOrInfinityParameter", <|"name" -> name|>]];
+checkParameter[_, "PositiveNumberOrInfinity"][value : _ ? (# > 0 &)] := value;
+declareMessage[General::notPositiveNumberOrInfinityParameter,
+               "Parameter `name` in `expr` is expected to be a positive machine-sized number or Infinity."];
+checkParameter[name_, "PositiveNumberOrInfinity"][_] :=
+  throw[Failure["notPositiveNumberOrInfinityParameter", <|"name" -> name|>]];
 
 (* Initialization *)
 
