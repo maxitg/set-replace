@@ -20,7 +20,7 @@ For example, [`GenerateSingleHistory`](GenerateSingleHistory.md) corresponds to
 
 ```wl
 In[] := #["ExpressionsEventsGraph", VertexLabels -> Placed[Automatic, After]] & @
-  SetReplaceTypeConvert[{WolframModelEvolutionObject, 2}] @
+  SetReplaceTypeConvert[WolframModelEvolutionObject] @
     GenerateSingleHistory[MultisetSubstitutionSystem[{a_, b_} /; a < b :> {a + b}], {1, 2, 3, 4}]
 ```
 
@@ -31,7 +31,7 @@ We can also use a more general [`GenerateMultihistory`](GenerateMultihistory.md)
 
 ```wl
 In[] := #["ExpressionsEventsGraph", VertexLabels -> Placed[Automatic, After]] & @
-  SetReplaceTypeConvert[{WolframModelEvolutionObject, 2}] @
+  SetReplaceTypeConvert[WolframModelEvolutionObject] @
     GenerateMultihistory[
       MultisetSubstitutionSystem[{a_, b_} /; a < b :> {a + b}], {1, 2, 3, 4}, MaxDestroyerEvents -> 2]
 ```

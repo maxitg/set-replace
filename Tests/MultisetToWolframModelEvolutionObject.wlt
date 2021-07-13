@@ -8,13 +8,13 @@
     "tests" -> {
       VerificationTest[
         (VertexCount @ #["ExpressionsEventsGraph"] &) @
-          SetReplaceTypeConvert[{WolframModelEvolutionObject, 2}] @
+          SetReplaceTypeConvert[WolframModelEvolutionObject] @
             GenerateMultihistory[MultisetSubstitutionSystem[{a_, b_} :> {a + b}], {1, 2, 3}, MaxGeneration -> 1],
         15],
 
       VerificationTest[
         (#["EventsCount"] &) @
-          SetReplaceTypeConvert[{WolframModelEvolutionObject, 2}] @
+          SetReplaceTypeConvert[WolframModelEvolutionObject] @
             GenerateMultihistory[MultisetSubstitutionSystem[{a_, b_} :> {a + b}], {1, 2, 3}, MaxEvents -> 10],
         10]
     }
